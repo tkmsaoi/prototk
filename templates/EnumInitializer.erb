@@ -1,0 +1,14 @@
+using Google.Protobuf.Reflection;
+
+namespace <%= namespace %>
+{
+    public class <%= class_name %>
+    {
+        static <%= class_name %>()
+        {
+            <%- enums.each do |enum| -%>
+            FileDescriptor.ForceReflectionInitialization<<%= enum %>>();
+            <%- end -%>
+        }
+    }
+}
