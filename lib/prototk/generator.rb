@@ -13,9 +13,11 @@ module Prototk
     def generate(profile)
       profile.each do |name, config|
         plugin_options = generate_plugin_options(profile, config)
-        files = Prototk.glob_protos(config.src_path)
 
-        @runner.run("protoc", "-I=#{config.src_path}", *plugin_options, *files)
+        src_path = profile.expand_path(config.src_path)
+        files = Prototk.glob_protos(src_path)
+
+        @runner.run("protoc", "-I=#{src_path}", *plugin_options, *files)
       end
     end
 
@@ -27,7 +29,8 @@ module Prototk
           options << "--plugin=#{plugin_path}"
         end
 
-        options << "--#{plugin_name}_out=#{config.out_path}"
+        out_path = profile.expand_path(config.out_path)
+        options << "--#{plugin_name}_out=#{out_path}"
 
         plugin_options.each do |key, value|
           options << "--#{plugin_name}_opt=#{key}=#{value}"
