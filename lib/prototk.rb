@@ -1,12 +1,14 @@
-require 'pathname'
-require "prototk/version"
+require 'prototk/version'
 
 module Prototk
-  autoload :CLI, "prototk/cli"
-  autoload :Config, "prototk/config"
-  autoload :DSL, "prototk/dsl"
-  autoload :Generator, "prototk/generator"
-  autoload :Runner, "prototk/runner"
+  autoload :CLI, 'prototk/cli'
+  autoload :Config, 'prototk/config'
+  autoload :Generator, 'prototk/generator'
+  autoload :Plugin, 'prototk/plugin'
+  autoload :Profile, 'prototk/profile'
+  autoload :Runner, 'prototk/runner'
+
+  PLUGIN_PREFIX = 'protoc-gen-'
 
   class Error < StandardError; end
 
@@ -15,62 +17,24 @@ module Prototk
       @base_path ||= File.realpath("#{__dir__}/..")
     end
 
-    def plugins_path
+    def plugin_path
       "#{base_path}/plugins"
     end
 
-    def protofile_path
+    def default_profile_path
       "#{Dir.pwd}/Protofile"
     end
 
-    def list_plugins
-      Pathname.glob("#{plugins_path}/*").map(&:basename)
-    end
-
-    def plugin(name)
-      path = "#{plugins_path}/#{name}"
-      raise Error, "Plugin #{name} not found" unless File.exist?(path)
-      path
-    end
-
-    def load_config(path=nil)
-      path ||= protofile_path
+    def load_profile(path = nil)
+      path ||= default_profile_path
       unless File.exist?(path)
-        raise Error, "Protofile does not exists"
+        raise Error, 'Protofile does not exists'
       end
-
-      code = File.read(path)
-      config = DSL.eval(code, path)
-      unless config
-        raise Error, "Protofile must return configuration"
-      end
-
-      config
+      Profile.new(path)
     end
 
     def glob_protos(path)
-      Dir.glob(File.join(path, '*.proto'))
+      Dir.glob(File.join(path, '**/*.proto'))
     end
-
-    # def test
-    #   if ARGV.size < 3
-    #     puts "Usage: $0 SRC_DIR OUT_DIR NAMESPACE"
-    #   end
-
-    #   base_path = File.expand_path(__FILE__, '..')
-    #   template_path = "#{base_path}/templates/"
-
-    #   src_dir = ARGV[0]
-    #   out_dir = ARGV[1]
-    #   namespace = ARGV[2]
-
-    #   class_name = "EnumInitializer"
-
-    #   pattern = File.join(src_dir, "*.proto")
-
-    #   enums = Dir.glob(pattern).map do |filename|
-    #     File.basename(filename, '.proto')
-    #   end
-    # end
   end
 end

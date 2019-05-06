@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'prototk'
+require 'erb'
+
+class CSharpEnumInitializer < Prototk::Plugin
+  name 'csenuminit'
+
+  def handle(request, options)
+    namespace = options[:namespace] || 'global'
+    class_name = options[:class_name] || 'EnumInitializer'
+
+    enums = request.proto_file.flat_map do |proto|
+      (proto.enum_type || []).map(&:name)
+    end
+
+    erb = ERB.new(IO.read(template_path("#{name}.erb")), nil, '-')
+
+    response(
+      file: [
+        file(name: "#{class_name}.cs", content: erb.result(binding))
+      ]
+    )
+  end
+
+  def template_path(name = nil)
+    File.expand_path("../templates/#{name}", __FILE__)
+  end
+end
+
+CSharpEnumInitializer.new

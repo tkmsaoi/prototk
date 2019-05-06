@@ -1,24 +1,14 @@
 module Prototk
   class Config
-    attr_accessor \
-      :base_path,
-      :src_path,
-      :src_messages_path,
-      :src_enums_path,
-      :out_path,
-      :namespace,
-      :enum_initializer_name
+    attr_reader :name, :plugins
+    attr_writer :base_path, :src_path, :out_path
 
-    def initialize
+    def initialize(name)
+      @name = name
       @base_path = '.'
-
-      @src_path = "src"
-      @src_messages_path = "."
-      @src_enums_path = "enums"
-
-      @out_path = "out"
-
-      @enum_initializer_name = "EnumInitializer"
+      @src_path = 'src'
+      @out_path = 'out'
+      @plugins = {}
     end
 
     def base_path
@@ -29,16 +19,12 @@ module Prototk
       File.realpath(File.join(base_path, @src_path))
     end
 
-    def messages_path
-      File.realpath(File.join(src_path, src_messages_path))
-    end
-
-    def enums_path
-      File.realpath(File.join(src_path, src_enums_path))
-    end
-
     def out_path
       File.realpath(File.join(base_path, @out_path))
+    end
+
+    def plugin(name, options = {})
+      @plugins[name] = options
     end
   end
 end
